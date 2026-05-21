@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijital Mektup · Ceylin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700;1,9..144,900&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<style>
+/* ============================================================
+   DİJİTAL DİLEK KAPSÜLÜ · CEYLİN
+   Renkler ve metinler :root + HTML içinde — kolayca düzenlenir.
+   Görseller: eller.jpg / disco.jpg / ceylin.jpg (aynı klasörde)
+   ============================================================ */
+
+:root {
+  /* Bordo — koyu, soğuk-pembe alt tonlu (turuncu lean kaldırıldı) */
+  --bg: #6B0A20;            /* Kapak / giriş */
+  --bg-section: #470818;    /* Genel bölümler */
+  --bg-deep: #2B040F;       /* Hayal bölümü (en koyu) */
+  --bg-velvet: #56101F;
+
+  /* Antique gold paleti (korundu) */
+  --gold-1: #6B4F0F;
+  --gold-2: #9B7B1F;
+  --gold-3: #C9A227;
+  --gold-4: #E2C46C;
+  --gold-5: #F7E7B5;
+
+  --cream: #F5EBD9;
+  --white: #FFFFFF;
+
+  --wax: #1A0408;
+  --wax-dark: #0A0102;
+  --wax-light: #2A0608;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+html, body {
+  background: var(--bg-section);
+  color: var(--cream);
+  font-family: 'Cormorant Garamond', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Velvet grain */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 199;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(10, 2, 4, 0.6) 100%);
+}
+
+body.opened { overflow-y: auto; }
+body:not(.opened) { overflow: hidden; }
+
+/* ============ COVER ============ */
+.cover {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.8rem 4rem;
+  cursor: pointer;
+  transition: transform 1.6s cubic-bezier(0.65, 0, 0.35, 1), opacity 1.4s ease;
+  z-index: 50;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.cover.opened {
+  transform: translateY(-110vh);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Bulanık dolgu katmanı — kenarlar görselin renk/dokusunu sürdürür */
+.cover-bg-blur {
+  position: absolute;
+  inset: 0;
+  background-image: url('eller.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(48px) brightness(0.62) saturate(1.1);
+  transform: scale(1.18);
+  z-index: 0;
+}
+
+/* Net, ortalanmış eller kompozisyonu — kenarları bulanığa karışır */
+.cover-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('eller.jpg');
+  background-size: auto 118%;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  z-index: 1;
+}
+
+/* Merkez okunabilirliği + renk birliği için bordo radyal katman */
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 58% at 50% 46%, var(--bg) 0%, rgba(107, 10, 32, 0.72) 48%, rgba(107, 10, 32, 0.2) 78%, transparent 100%);
+}
+
+.cover > .top-bar,
+.cover > .title-area,
+.cover > .bottom-area { position: relative; z-index: 3; }
+
+/* Top bar — sadece sağ: tarih */
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold-4);
+  opacity: 0.75;
+}
+
+/* Title area */
+.title-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem 0;
+  gap: clamp(0.7rem, 1.8vh, 1.3rem);
+}
+
+.issue-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-4);
+}
+
+.issue-label::before, .issue-label::after {
+  content: '';
+  display: inline-block;
+  width: 30px;
+  height: 1px;
+  background: var(--gold-4);
+  vertical-align: middle;
+  margin: 0 0.75rem;
+  opacity: 0.55;
+}
+
+/* Ceylin fotoğrafı — standart dikdörtgen + net altın kenar */
+.photo-arch {
+  height: clamp(170px, 38vh, 330px);
+  aspect-ratio: 400 / 616;
+  width: auto;
+  border-radius: 3px;
+  position: relative;
+  border: 2px solid var(--gold-4);
+  box-shadow:
+    inset 0 0 0 1px rgba(247, 231, 181, 0.5),
+    0 0 0 6px var(--bg),
+    0 0 0 7px rgba(201, 162, 39, 0.6),
+    0 16px 34px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.photo-arch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+  display: block;
+}
+
+/* Foto yoksa placeholder */
+.photo-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--bg-velvet), var(--bg-deep));
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.25em;
+  color: rgba(245, 235, 217, 0.4);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 1rem;
+}
+.photo-arch.no-img img { display: none; }
+.photo-arch.no-img .photo-fallback { display: flex; }
+
+/* Fotoğraf üstünde geçen parıltı (shimmer) */
+.photo-arch::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.28) 50%, transparent 100%);
+  transform: skewX(-18deg);
+  animation: photo-shimmer 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes photo-shimmer {
+  0%, 100% { left: -120%; }
+  55%, 100% { left: 160%; }
+}
+
+.name {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.6rem, 3.2vw, 2.7rem);
+  color: var(--cream);
+  letter-spacing: -0.01em;
+}
+
+.name::before, .name::after {
+  content: '✦';
+  color: var(--gold-4);
+  margin: 0 0.9rem;
+  font-size: 0.5em;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
+.subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--cream);
+  opacity: 0.6;
+  max-width: 34ch;
+  line-height: 1.5;
+}
+
+/* Bottom area */
+.bottom-area {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: flex-end;
+  gap: 2rem;
+}
+
+.cta {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold-4);
+  opacity: 0.75;
+  padding-bottom: 1.5rem;
+  animation: blink 2.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.95; }
+}
+
+.bottom-right {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cream);
+  opacity: 0.5;
+  text-align: right;
+  padding-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.bottom-right strong { color: var(--gold-4); font-weight: 700; }
+
+/* ============ WAX SEAL (reusable) ============ */
+.wax-seal {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.wax-seal:hover { transform: scale(1.06); }
+
+.wax-glow {
+  position: absolute;
+  inset: -30px;
+  background: radial-gradient(circle, rgba(226, 196, 108, 0.32) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.wax-seal:hover .wax-glow { opacity: 1; }
+
+.wax-half {
+  position: absolute;
+  width: 62px;
+  height: 124px;
+  background: radial-gradient(ellipse at 30% 30%, var(--wax-light) 0%, var(--wax) 35%, var(--wax-dark) 75%, #050102 100%);
+  transition: transform 1.5s cubic-bezier(0.65, 0.05, 0.35, 1.05);
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+}
+
+.wax-half.left {
+  left: 0;
+  border-radius: 62px 0 0 62px;
+  box-shadow: inset -8px 0 22px rgba(0,0,0,0.6);
+  clip-path: polygon(0% 0%, 100% 0%, 95% 45%, 100% 55%, 90% 70%, 100% 100%, 0% 100%);
+}
+
+.wax-half.right {
+  right: 0;
+  border-radius: 0 62px 62px 0;
+  box-shadow: inset 8px 0 22px rgba(0,0,0,0.6);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 10% 70%, 0% 55%, 5% 45%);
+}
+
+.wax-seal.broken .wax-half.left,
+.cover.opened .wax-half.left {
+  transform: translateX(-300px) translateY(60px) rotate(-50deg);
+}
+
+.wax-seal.broken .wax-half.right,
+.cover.opened .wax-half.right {
+  transform: translateX(300px) translateY(60px) rotate(50deg);
+}
+
+.wax-stamp {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 2.6rem;
+  background: linear-gradient(135deg, var(--gold-3), var(--gold-4), var(--gold-5), var(--gold-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.5));
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  letter-spacing: -0.04em;
+}
+
+.wax-seal.broken .wax-stamp,
+.cover.opened .wax-stamp { opacity: 0; }
+
+/* ============ SCROLL CONTENT ============ */
+.scroll-content {
+  position: relative;
+  z-index: 1;
+  padding-top: 100vh;
+  opacity: 0;
+  transition: opacity 1s ease 0.8s;
+}
+
+.cover.opened ~ .scroll-content { opacity: 1; }
+
+.section {
+  min-height: 100vh;
+  padding: 9rem 4rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-4);
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+
+.section-label::before, .section-label::after {
+  content: '—';
+  margin: 0 0.75rem;
+  opacity: 0.6;
+}
+
+.section-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-align: center;
+}
+
+.gold-text {
+  background: linear-gradient(100deg, var(--gold-1) 0%, var(--gold-2) 18%, var(--gold-3) 38%, var(--gold-4) 50%, var(--gold-3) 62%, var(--gold-2) 82%, var(--gold-1) 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 25px rgba(201, 162, 39, 0.25));
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ---- SECTION 1: 25 SEALED ---- */
+.section-sealed {
+  background: var(--bg-section);
+  text-align: center;
+}
+
+/* ---- SECTION 2: DREAM ---- */
+.section-dream {
+  background:
+    radial-gradient(ellipse at 30% 25%, rgba(226, 196, 108, 0.08), transparent 60%),
+    radial-gradient(ellipse at 70% 75%, rgba(201, 162, 39, 0.05), transparent 60%),
+    var(--bg-deep);
+  padding: 11rem 4rem 9rem;
+  overflow: hidden;
+}
+
+.stars { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+
+.star {
+  position: absolute;
+  background: var(--gold-4);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--gold-4);
+  animation: twinkle-star 3s ease-in-out infinite;
+}
+
+@keyframes twinkle-star {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+.dream-header { text-align: center; position: relative; z-index: 2; }
+
+.dream-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+  color: var(--cream);
+  opacity: 0.65;
+  max-width: 50ch;
+  margin: 2rem auto 0;
+  line-height: 1.6;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.dream-prompts {
+  max-width: 720px;
+  margin: 7rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  position: relative;
+  z-index: 2;
+}
+
+.dream-prompt { text-align: center; }
+
+.dream-no {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  color: var(--gold-4);
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 1rem;
+}
+
+.dream-text {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+  color: var(--cream);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.dream-text em { color: var(--gold-4); font-weight: 500; font-style: italic; }
+
+.dream-divider { display: flex; align-items: center; justify-content: center; }
+
+.dream-divider::before, .dream-divider::after {
+  content: '';
+  width: 50px;
+  height: 1px;
+  background: rgba(226, 196, 108, 0.4);
+}
+
+.dream-divider span { color: var(--gold-4); margin: 0 1rem; font-size: 0.9rem; opacity: 0.8; }
+
+.dream-whisper {
+  text-align: center;
+  margin-top: 7rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--cream);
+  opacity: 0.4;
+  letter-spacing: 0.05em;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---- SECTION 3: HIDDEN LETTER ---- */
+.section-letter {
+  background: var(--bg-section);
+  padding: 8rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Disco görseli arka plan (disco.jpg) */
+.letter-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('disco.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.letter-bg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, rgba(107, 10, 32, 0.5) 0%, rgba(43, 4, 15, 0.92) 100%);
+}
+
+.section-letter > * { position: relative; z-index: 2; }
+
+.letter-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.letter-gate.hidden {
+  opacity: 0;
+  transform: translateY(-30px);
+  pointer-events: none;
+  position: absolute;
+  left: 0; right: 0;
+}
+
+.letter-prompt {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  color: var(--cream);
+  max-width: 26ch;
+  line-height: 1.4;
+}
+
+.letter-prompt em { color: var(--gold-4); font-weight: 500; font-style: italic; }
+
+.letter-cta {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-4);
+  opacity: 0.75;
+  animation: blink 2s ease-in-out infinite;
+}
+
+.letter-seal { width: 110px; height: 110px; }
+.letter-seal .wax-half { width: 55px; height: 110px; }
+.letter-seal .wax-stamp { font-size: 2.1rem; }
+
+/* Letter content — gizli, açılınca görünür */
+.letter-content {
+  display: none;
+  margin: 0 auto;
+  max-width: 620px;
+}
+
+.letter-content.revealed {
+  display: block;
+  animation: fadeInUp 1.1s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(35px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.letter {
+  padding: 4rem 3.2rem;
+  background: linear-gradient(150deg, rgba(245, 235, 217, 0.07), rgba(245, 235, 217, 0.02));
+  border: 1px solid rgba(226, 196, 108, 0.35);
+  backdrop-filter: blur(3px);
+  text-align: left;
+  position: relative;
+}
+
+.letter::before {
+  content: '';
+  position: absolute;
+  top: 8px; left: 8px; right: 8px; bottom: 8px;
+  border: 1px solid rgba(226, 196, 108, 0.2);
+  pointer-events: none;
+}
+
+.letter-greet {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--gold-4);
+  margin-bottom: 1.6rem;
+}
+
+.letter-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.18rem;
+  line-height: 1.8;
+  color: var(--cream);
+  opacity: 0.9;
+}
+
+.letter-body p { margin-bottom: 1.2rem; }
+
+.letter-sign {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  color: var(--gold-4);
+  margin-top: 2.2rem;
+  text-align: right;
+}
+
+.closing-footer {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: var(--cream);
+  opacity: 0.4;
+  text-transform: uppercase;
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(245, 235, 217, 0.12);
+  text-align: center;
+}
+
+/* Cursor sparkle — KORUNDU */
+.cursor-sparkle {
+  position: fixed;
+  pointer-events: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-4), transparent);
+  box-shadow: 0 0 6px var(--gold-4), 0 0 12px rgba(226, 196, 108, 0.5);
+  z-index: 1000;
+  animation: cursor-fade 0.8s ease forwards;
+}
+
+@keyframes cursor-fade {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0) translateY(15px); }
+}
+
+/* Fotoğraf etrafı parıltı yıldızları */
+.sparkle {
+  position: fixed;
+  pointer-events: none;
+  width: 9px;
+  height: 9px;
+  z-index: 60;
+  animation: sparkle-fade 2.2s ease-in-out forwards;
+}
+
+.sparkle::before, .sparkle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 45%, var(--gold-4) 49%, var(--gold-5) 51%, transparent 55%);
+}
+.sparkle::after { transform: rotate(90deg); }
+
+@keyframes sparkle-fade {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1) rotate(45deg); }
+  70% { opacity: 1; transform: scale(1.3) rotate(90deg); }
+  100% { opacity: 0; transform: scale(0) rotate(135deg); }
+}
+
+/* ============ DÜŞEN DİSCO TOPLARI ============ */
+.disco-drop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 95;
+  overflow: hidden;
+  display: none;
+}
+.disco-drop.active { display: block; }
+
+.disco-ball-fall {
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: auto;
+  opacity: 0;
+  filter: drop-shadow(0 0 22px rgba(226, 196, 108, 0.45)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+.disco-drop.active .disco-ball-fall {
+  animation: disco-fall 3s cubic-bezier(0.55, 0.05, 0.7, 1) forwards;
+}
+.disco-ball-fall.b1 { left: 11%; width: 132px; animation-delay: 0.05s; }
+.disco-ball-fall.b2 { left: 43%; width: 170px; animation-delay: 0.33s; }
+.disco-ball-fall.b3 { left: 73%; width: 110px; animation-delay: 0.56s; }
+
+@keyframes disco-fall {
+  0%   { transform: translateY(-32vh) translateX(0) rotate(-12deg); opacity: 0; }
+  12%  { opacity: 1; }
+  84%  { opacity: 1; }
+  100% { transform: translateY(120vh) translateX(26px) rotate(20deg); opacity: 0; }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .disco-ball-fall.b1 { width: 82px; }
+  .disco-ball-fall.b2 { width: 106px; }
+  .disco-ball-fall.b3 { width: 70px; }
+  .cover { padding: 1.8rem 1.5rem; }
+  .top-bar { font-size: 0.58rem; letter-spacing: 0.18em; }
+  .photo-arch { height: clamp(150px, 32vh, 250px); }
+  .name::before, .name::after { margin: 0 0.5rem; }
+  .issue-label::before, .issue-label::after { width: 16px; margin: 0 0.45rem; }
+  .bottom-area { grid-template-columns: 1fr; gap: 1rem; text-align: center; justify-items: center; }
+  .cta, .bottom-right { padding-bottom: 0; text-align: center; }
+  .wax-seal { width: 100px; height: 100px; }
+  .wax-half { width: 50px; height: 100px; }
+  .wax-stamp { font-size: 2rem; }
+
+  .section { padding: 5.5rem 1.5rem; }
+  .section-dream { padding: 7rem 1.5rem 5rem; }
+  .dream-prompts { gap: 4rem; margin-top: 5rem; }
+  .section-letter { padding: 5.5rem 1.5rem; }
+  .letter { padding: 2.6rem 1.6rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover" id="cover">
+  <div class="cover-bg-blur"></div>
+  <div class="cover-bg"></div>
+  <div class="cover-overlay"></div>
+
+  <div class="top-bar">
+    <div>21 Mayıs 2026</div>
+  </div>
+
+  <div class="title-area">
+    <div class="issue-label">Dijital Mektup</div>
+
+    <div class="photo-arch" id="photoArch">
+      <img src="ceylin.jpg" alt="Ceylin" id="ceylinPhoto">
+      <div class="photo-fallback">Ceylin'in<br>fotoğrafı<br>(ceylin.jpg)</div>
+    </div>
+
+    <div class="name">Mutlu Ceylin Günü</div>
+    <div class="subtitle">Seninle ilgili sevdiğim şeyler,<br>güzel dilekler.</div>
+  </div>
+
+  <div class="bottom-area">
+    <div class="cta">↓ Mührü kırmak için tıkla</div>
+    <div class="wax-seal" id="coverWaxSeal">
+      <div class="wax-glow"></div>
+      <div class="wax-half left"></div>
+      <div class="wax-half right"></div>
+      <div class="wax-stamp">26</div>
+    </div>
+    <div class="bottom-right">
+      Mühürlendi<br>
+      <strong>21.05.2026</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Mühür kırılınca düşen disco toplar -->
+<div class="disco-drop" id="discoDrop">
+  <img src="disco1.png" class="disco-ball-fall b1" alt="">
+  <img src="disco2.png" class="disco-ball-fall b2" alt="">
+  <img src="disco3.png" class="disco-ball-fall b3" alt="">
+</div>
+
+<!-- ============ SCROLL CONTENT ============ -->
+<div class="scroll-content">
+
+  <!-- SECTION 1: 25 SEALED -->
+  <section class="section section-sealed">
+    <div class="section-label">Sayı 26 başlamadan</div>
+    <h1 class="section-title gold-text">25,<br>mühürlendi.</h1>
+  </section>
+
+  <!-- SECTION 2: DREAM -->
+  <section class="section section-dream">
+    <div class="stars" id="stars"></div>
+    <div class="dream-header">
+      <div class="section-label">Şimdi 26</div>
+      <h1 class="section-title gold-text">Önündeki sayfaları<br>hayal et.</h1>
+    </div>
+    <p class="dream-intro">
+      Bu sayfalar henüz boş. Ben sana sadece birkaç pencere bıraktım —<br>
+      içlerinden bakıp, ne görmek istediğine sen karar ver.
+    </p>
+
+    <div class="dream-prompts">
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 01</div>
+        <div class="dream-text">26 sana bir hediye verebilseydi,<br><em>ne isterdin?</em></div>
+      </div>
+      <div class="dream-divider"><span>✦</span></div>
+
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 02</div>
+        <div class="dream-text">Bir sonraki yaşında <em>"iyi ki"</em><br>demek istediğin şeyler neler?</div>
+      </div>
+      <div class="dream-divider"><span>✦</span></div>
+
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 03</div>
+        <div class="dream-text">Yeni yaşında en çok<br><em>gitmek istediğin yerler?</em></div>
+      </div>
+      <div class="dream-divider"><span>✦</span></div>
+
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 04</div>
+        <div class="dream-text">27. yaşına kadar <em>kazanmak istediğin</em><br>alışkanlıklar neler?</div>
+      </div>
+      <div class="dream-divider"><span>✦</span></div>
+
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 05</div>
+        <div class="dream-text">Bu sene <em>denemek istediğin</em><br>neler var?</div>
+      </div>
+      <div class="dream-divider"><span>✦</span></div>
+
+      <div class="dream-prompt">
+        <div class="dream-no">Pencere № 06</div>
+        <div class="dream-text">Yeni yaşının sloganı —<br><em>tek kelimelik bir tılsım.</em></div>
+      </div>
+    </div>
+
+    <div class="dream-whisper">— cevaplar kimsenin duymadığı yerde, içinde kalır —</div>
+  </section>
+
+  <!-- SECTION 3: HIDDEN LETTER -->
+  <section class="section section-letter">
+    <div class="letter-bg"></div>
+    <div class="letter-bg-overlay"></div>
+
+    <div class="letter-gate" id="letterGate">
+      <div class="section-label">Bir de...</div>
+      <div class="letter-prompt">Sana ayrıca yazdığım<br><em>bir mektup var.</em></div>
+      <div class="wax-seal letter-seal" id="letterSeal">
+        <div class="wax-glow"></div>
+        <div class="wax-half left"></div>
+        <div class="wax-half right"></div>
+        <div class="wax-stamp">C</div>
+      </div>
+      <div class="letter-cta">↓ Mührü kır</div>
+    </div>
+
+    <div class="letter-content" id="letterContent">
+      <div class="letter">
+        <div class="letter-greet">Sevgili Ceylin,</div>
+        <div class="letter-body">
+          <p>Güzel arkadaşım, bir tanecik kıvırcığım, yeniden yan yana olduğumuz için ne kadar şanslıyım. Seni ne kadar özlediğimi ve yerinin dolmayacağını tekrar kavuştuktan sonra daha iyi fark ettim. Seninle gülmeyi çok seviyorum. Seni dinlemeyi çok seviyorum. Bana gülen gözlerle, bazen hüzünlü gözlerle hissettiklerini anlatmanı çok seviyorum. Seninle dedikodu yapmayı, hayal kurmayı, yemek yemeyi çok seviyorum. Takıp takıştırmana, daima şıkır şıkır dolaşmana bayılıyorum.</p>
+          <p>Biz seninle her zaman aynı fikirde olmak zorunda değiliz, bunun bir dostlukta ne kadar kıymetli olduğunun farkında mısın? Ne kadar farklı düşünürsek düşünelim, saatlerce konuşabilmemiz, özgürce tartışabilmemiz ve günün sonunda birbirimizi her koşulda kollayacağımızı bilmemiz o kadar özgürleştirici ve nadir bir bağ ki... İçimizi açabilmemiz, hata yaptığımızda "bir dakika böyle değil" diyebilmemizi seviyorum. Bu güvenin ve açıklığı sağlayabilmenin bir eşi daha yok.</p>
+          <p>Seni sen yapan bayıldığım bir şeyden bahsetmek istiyorum. Sen öyle güçlü, öyle neşeli ve öyle ışıl ışıl bir kadınsın ki, girdiğin her ortamı canlandırmana hayranım. Bunu zaten en yakınında olmayan biri bile görebilir ama ben başka bir şeye daha tav oluyorum; çevrendeki herkesi daha da parlatmak için o güzel kalbinle çabalıyorsun. Bu inceliğini, bu içtenliğini inanılmaz büyüleyici buluyorum. Güzel şeyler söylemekten çekinmemenin ve belki dokunduğun kişinin bile farkında olmadığı detayları ona göstermenin peri yeteneklerinden biri olduğunu düşünüyorum. Bir diğeri de, hayatın tüm karanlık ve zor günlerine karşılık, istediğin hayat için sonsuz devam edebilme kuvvetin. Sana çok hayranım ve gücünle sonsuz gurur duyuyorum canım kıvırcık perim. Şimdi 26'ya beraber el ele yürürken, hayatımda olduğun her an için şükrediyorum. Yıllar sonra bu sayfayı açtığında, seni düşünürken kalbimin nasıl sıcacık olduğunu, gözlerimin içinin nasıl güldüğünü hissedersin dilerim ki...</p>
+          <p>Yeni yaşında ve önündeki tüm yıllarda, içindeki sonsuz gücün hak ettiği tüm güzellikler seni bulsun. Dilerim kalbinden geçen, hayalini kurduğun ne varsa hayat sana en çabasız ve en neşeli haliyle getirsin. Kalbin her gün ferahlasın, gözlerin ışıldasın bir tanem. Parlatmaya bayıldığın sevdiklerin gibi, senin de hayatın her an ışıl ışıl, kahkahaların her zamankinden bol olsun. İyi ki doğdun benim bir tanecik kıvırcığım, iyi ki varsın ve iyi ki yeniden benimlesin!</p>
+        </div>
+        <div class="letter-sign">— İpoş</div>
+      </div>
+    </div>
+
+    <div class="closing-footer">Sayı 27, önümüzdeki Mayıs · Sadece Ceylin için · sevgiyle</div>
+  </section>
+
+</div>
+
+<script>
+const cover = document.getElementById('cover');
+const coverWaxSeal = document.getElementById('coverWaxSeal');
+const letterGate = document.getElementById('letterGate');
+const letterSeal = document.getElementById('letterSeal');
+const letterContent = document.getElementById('letterContent');
+const photoArch = document.getElementById('photoArch');
+const ceylinPhoto = document.getElementById('ceylinPhoto');
+const discoDrop = document.getElementById('discoDrop');
+
+let opened = false;
+let letterOpened = false;
+
+/* Sadece parlak gold konfeti */
+const goldColors = ['#C9A227', '#D4AF37', '#E2C46C', '#F7E7B5', '#B8941F'];
+
+/* Foto yoksa placeholder göster */
+ceylinPhoto.addEventListener('error', () => photoArch.classList.add('no-img'));
+if (ceylinPhoto.complete && ceylinPhoto.naturalWidth === 0) photoArch.classList.add('no-img');
+
+function fireGoldConfetti(originY) {
+  confetti({
+    particleCount: 150, spread: 115,
+    origin: { x: 0.5, y: originY },
+    colors: goldColors, scalar: 1.5,
+    startVelocity: 55, ticks: 290,
+    shapes: ['circle', 'square']
+  });
+  setTimeout(() => {
+    confetti({ particleCount: 65, angle: 60, spread: 75, origin: { x: 0.08, y: 0.7 }, colors: goldColors, scalar: 1.3 });
+    confetti({ particleCount: 65, angle: 120, spread: 75, origin: { x: 0.92, y: 0.7 }, colors: goldColors, scalar: 1.3 });
+  }, 300);
+  const end = Date.now() + 3000;
+  (function frame() {
+    confetti({
+      particleCount: 3, angle: 90, spread: 360,
+      origin: { x: Math.random(), y: 0 },
+      colors: goldColors, scalar: 0.9, gravity: 0.6,
+      drift: (Math.random() - 0.5) * 2
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+}
+
+function openCover() {
+  if (opened) return;
+  opened = true;
+  cover.classList.add('opened');
+  document.body.classList.add('opened');
+  fireGoldConfetti(0.85);
+  discoDrop.classList.add('active');
+  setTimeout(() => discoDrop.classList.remove('active'), 4500);
+}
+
+function openLetter() {
+  if (letterOpened) return;
+  letterOpened = true;
+  letterSeal.classList.add('broken');
+  const rect = letterSeal.getBoundingClientRect();
+  confetti({
+    particleCount: 70, spread: 85,
+    origin: {
+      x: (rect.left + rect.width / 2) / window.innerWidth,
+      y: (rect.top + rect.height / 2) / window.innerHeight
+    },
+    colors: goldColors, scalar: 1.15
+  });
+  setTimeout(() => {
+    letterGate.classList.add('hidden');
+    letterContent.classList.add('revealed');
+    letterContent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 850);
+}
+
+coverWaxSeal.addEventListener('click', (e) => { e.stopPropagation(); openCover(); });
+cover.addEventListener('click', () => { if (!opened) openCover(); });
+letterSeal.addEventListener('click', openLetter);
+
+/* Cursor sparkle — KORUNDU */
+let lastSparkle = 0;
+document.addEventListener('mousemove', (e) => {
+  const now = Date.now();
+  if (now - lastSparkle < 70) return;
+  lastSparkle = now;
+  const s = document.createElement('div');
+  s.className = 'cursor-sparkle';
+  s.style.left = (e.clientX - 2.5) + 'px';
+  s.style.top = (e.clientY - 2.5) + 'px';
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 800);
+});
+
+/* Ceylin fotoğrafının etrafında parıltı yıldızları */
+function photoSparkles() {
+  setInterval(() => {
+    if (opened) return;
+    const rect = photoArch.getBoundingClientRect();
+    if (rect.width === 0) return;
+    const count = Math.random() > 0.6 ? 2 : 1;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'sparkle';
+      const edge = Math.random();
+      let x, y;
+      if (edge < 0.5) {
+        x = rect.left + Math.random() * rect.width;
+        y = rect.top + (Math.random() > 0.5 ? -10 - Math.random() * 25 : rect.height + 10 + Math.random() * 25);
+      } else {
+        x = rect.left + (Math.random() > 0.5 ? -10 - Math.random() * 25 : rect.width + 10 + Math.random() * 25);
+        y = rect.top + Math.random() * rect.height;
+      }
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }
+  }, 320);
+}
+photoSparkles();
+
+/* Hayal bölümü yıldızları */
+function buildStars() {
+  const c = document.getElementById('stars');
+  if (!c) return;
+  for (let i = 0; i < 70; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = 1 + Math.random() * 2.5;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.animationDuration = (2 + Math.random() * 3) + 's';
+    c.appendChild(star);
+  }
+}
+buildStars();
+</script>
+
+</body>
+</html>
